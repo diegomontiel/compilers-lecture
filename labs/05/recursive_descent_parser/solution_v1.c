@@ -1,27 +1,30 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-
-//FIXME
+#include <ctype.h>
+#include <string.h>
 
 /***************************
 Example:
 Grammar:
-E --> i E'
-E' --> + i E' | e
+E --> T | T + E
+T --> int | int * T | (E) 
 ***************************/
 
 char l;
 
+bool E();
+bool T();
 
-bool E_alpha();
-bool E_alpha_1();
-bool E_alpha_2();
+bool match(char t);
+bool isInt();
+void error();
 
 void error(){
 	printf("Error\n");
 	exit(-1);
 }
+
 // Match function
 bool match(char t) {
     if (l == t) {
@@ -32,34 +35,29 @@ bool match(char t) {
 		error();
 }
 
-// Definition of E' as per the given production
-bool E_alpha(){
-	if(E_alpha_1() || E_alpha_2()){
+bool isInt(){
+	if(isdigit(l) == true){
+		l =  getchar();
 		return true;
+	} else {
+		return false;
 	}
-}
-
-// Definition of E_1' as per the given production
-bool E_alpha_2() {
-	if (l == 'i')
-		return match('i');
-}
-
-// Definition of E_2' as per the given production
-bool E_alpha_1() {
-    if (l == '+') {
-		if(match('+') && match('i') && E_alpha())
-			return true;
-    }
 }
 
 // Definition of E, as per the given production
 bool E() {
-    if (l == 'i') {
-        if (match('i') && E_alpha()){
-			return true;
-		}
-    }else{
+	if (T() || (T() && match('+') && E()) /* T + E */) {
+		return true;
+	}else{
+		error();
+	}
+}
+
+// Definition of T, as per the given production
+bool T() {
+	if (isInt() || (isInt() && match('*') && T()) /* int * T()  */ || (match('(') && E() && match(')'))) /* (E) */ {
+		return true;
+	}else{
 		error();
 	}
 }
